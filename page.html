@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>智能用电运维云平台</title>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/base.css" rel="stylesheet">     <!-- 自定义属性 -->
+    <link href="css/index.css" rel="stylesheet">    <!-- 自定义属性 -->
+    <script src="js/jquery.min.js"></script> 
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/echarts.js"></script>    
+    <script src="js/echarts-liquidfill.js"></script>
+    <script src="echarts/echarts.js"></script>      <!-- 地图的echarts插件 -->
+    <script src="js/require.js"></script>           <!-- 地图插件 -->   
+    <script type="text/javascript"  src="http://api.map.baidu.com/api?v=2.0&ak=53oVIOgmSIejwV7EfphPgTynOZbIiVYu"></script>
+    <script src="js/screen.js"></script>            <!-- 执行全屏功能 -->
+    <script src="js/common.js"></script>            <!-- 自定义插件 -->
+    <script src="js/index.js"></script>             <!-- 自定义折线图，柱状图 -->
+    <script src="js/example.js"></script>           <!-- 自定义地图 -->
+    <script src="js/commontime.js"></script>
+
+    <style>
+        /* 去掉百度地图logo和文字 */
+        .BMap_cpyCtrl{
+            display:none;
+        }
+        .anchorBL{
+            display:none;
+        }
+        body, html {
+            width: 100%;
+            height: auto;
+            color: #333;
+            /* overflow: hidden; */
+            background: #142031 url(img/true.png) no-repeat;
+            background-size: 100% 100%;
+        }
+        .header {
+            width: 100%;
+            height: 80px;
+            padding: 0 20px;
+            min-width: 1366px;
+        }
+        .bg_header {
+            width: 100%;
+            height: 80px;
+            background: url(img/title.png) no-repeat;
+            background-size: 100% 100%;
+            position: relative;
+        }
+        .t_title {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            font-size: 2.5em;
+            line-height: 80px;
+            color: #fff;
+        }
+
+        .fl {
+            float: left;
+        }
+        /* 年月日负荷率 */
+            #main1{
+                display:flex;
+                justify-content: space-between;
+                margin-top:40px;
+                /* padding:0 10px; */
+            }
+            .chart_load {
+                width: 160px;
+                height: 167px;
+            }
+        /* 地图 */
+        body{
+         margin:0;
+        }
+        #chart_map{
+            width: 100%;
+            height:100%;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .main_table .t_btn8{
+            height:25%;
+        }
+    </style>
+    
+</head>
+<body id="content">
+    <div class="header">
+        <div class="bg_header">
+            <div class="header_nav fl t_title">
+                智能用电运维云平台
+                <p id="realtime" style="font-size:20px;position: absolute;top:10px;right:80px;"></p>
+                <img src="img/nav-title/1.png" alt="" style="position: absolute;top:33px;right:10px;">
+            </div> 
+        </div>
+    </div>
+    <!-- 图表 -->
+    <div class="data_content">
+        <div class="data_main">
+            <div class="main_left fl">
+                <!-- 日负荷折线图 -->
+                <div class="left_1 t_btn6" style="cursor: pointer;">
+                    <div class="t_line_box"><i class="t_l_line"></i> <i class="l_t_line"></i> </div> 
+                    <div class="t_line_box"><i class="t_r_line"></i> <i class="r_t_line"></i> </div> 
+                    <div class="t_line_box"><i class="l_b_line"></i> <i class="b_l_line"></i> </div> 
+                    <div class="t_line_box"><i class="r_b_line"></i><i class="b_r_line"></i> </div>
+                    <div class="main_title">
+                        <img src="img/3.png" alt="" style="width:18px;height:18px;">
+                        日负荷折线图
+                    </div>
+                    <div id="chart_1" class="chart" style="width:100%;height: 200px;"></div>
+                    <div class="main_table t_btn8">
+                        <table id="tabletest">
+                            <tbody>
+                            <!-- <tr>
+                                <td id='msg1'>
+                                    <img src='img/today.png' alt='今日最大负荷' style='width:25px;height:25px;margin-left:15px;'>
+                                    <span>今日最大负荷</span>
+                                </td>
+                                <td>15.32kw</td>
+                                <td id='msg2'>
+                                    <img src='img/time.png' alt='发生时间' style='width:25px;height:23px;margin-left:30px;'>
+                                    <span>发生时间</span>
+                                </td>
+                                <td>2019-08-07 11:07:00</td>
+                            </tr> -->
+                            <!-- <tr>
+                                <td><img src='img/yesterday.png' alt='昨日最大负荷' title='昨日最大负荷' style='width:25px;height:25px;margin-left:15px;'></td>
+                                <td>72.08kW</td>
+                                <td><img src='img/time.png' alt='发生时间' title='发生时间' style='width:25px;height:23px;margin-left:30px;'></td>
+                                <td>2019-08-06 16:49:00</td>
+                            </tr> -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 年月日负荷率表 -->
+                <div class="left_2" style="cursor: pointer;">
+                    <!--左上边框-->
+                    <div class="t_line_box">
+                        <i class="t_l_line"></i> 
+                        <i class="l_t_line"></i> 
+                    </div> 
+                    <!--右上边框-->
+                    <div class="t_line_box">
+                        <i class="t_r_line"></i> 
+                        <i class="r_t_line"></i> 
+                    </div> 
+                    <!--左下边框-->
+                    <div class="t_line_box">
+                        <i class="l_b_line"></i> 
+                        <imain1 class="b_l_line"></imain1> 
+                    </div> 
+                        <!--右下边框-->
+                        <div class="t_line_box">
+                        <i class="r_b_line"></i> 
+                        <i class="b_r_line"></i> 
+                    </div> 
+                    <div class="main_title">
+                        <img src="img/4.png" alt="" style="width:18px;height:18px;">
+                        负荷率
+                    </div>
+                    <!-- 3个圈圈 -->
+                    <!-- <div id="chart_load" class="chart" style="width:100%;height: 280px;"></div> -->
+                    <div id="main1" style="width:100%;height:158px;">
+                        <div class="chart_load" style="margin:0;"></div>
+                        <div class="chart_load" style="margin:0;"></div>
+                        <div class="chart_load" style="margin:0;"></div>
+                    </div>
+                    <div style="display:flex;justify-content: space-around;color:#fff;">
+                        <div>日负荷率</div>
+                        <div>月负荷率</div>
+                        <div>年负荷率</div>
+                    </div>
+                    <!-- 表格 -->
+                    <div class="main_table t_btn8" >
+                        <table id="tableLoad">
+                            <tbody>
+                                <!-- <tr>
+                                    <td>当天最大负荷</td>
+                                    <td>本月最大负荷</td>
+                                    <td>本年最大负荷</td>                          
+                                </tr>
+                                <tr>
+                                    <td>72.08kW</td>
+                                    <td>72.08kW</td>
+                                    <td>91.0kW</td>
+                                </tr> -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="main_center fl">
+                <!-- 项目概况 -->
+                <div class="center_text" style="position:relative;z-index: auto;">
+                    <!--左上边框-->
+                    <div class="t_line_box">
+                        <i class="t_l_line"></i> 
+                        <i class="l_t_line"></i> 
+                    </div> 
+                    <!--右上边框-->
+                    <div class="t_line_box">
+                        <i class="t_r_line"></i> 
+                        <i class="r_t_line"></i> 
+                    </div> 
+                    <!--左下边框-->
+                    <div class="t_line_box">
+                        <i class="l_b_line"></i> 
+                        <i class="b_l_line"></i> 
+                    </div> 
+                    <!--右下边框-->
+                    <div class="t_line_box">
+                        <i class="r_b_line"></i> 
+                        <i class="b_r_line"></i> 
+                    </div> 
+                    <div class="main_title" style="position: absolute;z-index: 2;">
+                        <img src="img/t_2.png" alt="">
+                        项目概况  
+                    </div>
+                    <!-- 地图 -->
+                    <div id="chart_map" style="position: absolute;z-index:1;"></div>
+                    <!-- 地图上的表格 -->
+                    <div class="main_table1 t_btn8" style="position: absolute;z-index: 3; bottom:0;right:0;">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <!-- <td>配电房数量</td>
+                                    <td>7个</td> -->
+                                    <td>预警总数</td>
+                                    <td>7个</td>
+                                </tr>
+                                <!-- <tr>
+                                    <td>主变数量</td>
+                                    <td>12个</td> 
+                                    <td>已确认告警</td>
+                                    <td>67个</td>                            
+                                </tr> -->
+                                <tr>
+                                    <td>主变容量</td>
+                                    <td>3000kVA</td> 
+                                    <!-- <td>已处理告警</td>
+                                    <td>0个</td>                             -->
+                                </tr>
+                                <tr>
+                                    <td>监测点个数</td>
+                                    <td>13个</td>   
+                                    <!-- <td>已完成巡检</td>
+                                    <td>0个</td>                           -->
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div> 
+                </div>
+            </div>
+            <div class="main_right fr">
+                <!-- 日电量柱状图 -->
+                <div class="right_1">
+                    <!--左上边框-->
+                    <div class="t_line_box">
+                        <i class="t_l_line"></i> 
+                        <i class="l_t_line"></i> 
+                    </div> 
+                    <!--右上边框-->
+                    <div class="t_line_box">
+                        <i class="t_r_line"></i> 
+                        <i class="r_t_line"></i> 
+                    </div> 
+                    <!--左下边框-->
+                    <div class="t_line_box">
+                        <i class="l_b_line"></i> 
+                        <i class="b_l_line"></i> 
+                    </div> 
+                        <!--右下边框-->
+                        <div class="t_line_box">
+                        <i class="r_b_line"></i> 
+                        <i class="b_r_line"></i> 
+                    </div> 
+                    <div class="main_title">
+                        <img src="img/5.png" alt="" style="width:18px;height:18px;">
+                        日电量柱状图    
+                    </div>
+                    <div id="chart_3" class="echart t_btn7" style="width:100%;height: 200px;"></div>
+                    <div class="main_table t_btn8">
+                        <table id="tabledianliang">
+                            <tbody>
+                                
+                                <!-- <tr>
+                                    <td><img src='img/today.png' alt='今日用电' title='今日用电' style='width:25px;height:25px;'></td>
+                                    <td><img src='img/yesterday.png' alt='昨日用电' title='昨日用电' style='width:25px;height:25px;'></td>
+                                    <td><img src='img/ydqushi.png' alt='用电趋势' title='用电趋势' style='width:25px;height:25px;'></td>
+                                </tr>
+                                <tr>
+                                    <td>17522.41</td>
+                                    <td>37111.03</td>
+                                    <td>278.5</td>
+                                </tr> -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 分时电量 -->
+                <div class="right_2">
+                    <!--左上边框-->
+                    <div class="t_line_box">
+                        <i class="t_l_line"></i> 
+                        <i class="l_t_line"></i> 
+                    </div> 
+                    <!--右上边框-->
+                    <div class="t_line_box">
+                        <i class="t_r_line"></i> 
+                        <i class="r_t_line"></i> 
+                    </div> 
+                    <!--左下边框-->
+                    <div class="t_line_box">
+                        <i class="l_b_line"></i> 
+                        <i class="b_l_line"></i> 
+                    </div> 
+                        <!--右下边框-->
+                        <div class="t_line_box">
+                        <i class="r_b_line"></i> 
+                        <i class="b_r_line"></i> 
+                    </div> 
+                    <div class="main_title">
+                        <img src="img/7.png" alt="" style="width:18px;height:18px;">
+                        分时电量
+                    </div>
+                    <div id="chart_4" class="echart t_btn4" style="width:100%;height:200px;cursor: pointer;"></div>
+                    <div class="main_table t_btn8">
+                        <table id="tableSum">
+                            <tbody>
+                                <!-- <tr>
+                                    <td>本月用电量(kW·h)</td>
+                                    <td>昨日同期(kW·h)</td>
+                                    <td>用电趋势(kW·h)</td>
+                                </tr>       
+                                <tr>
+                                    <td>17522.41</td>
+                                    <td>37111.03</td>
+                                    <td>278.5</td>
+                                </tr> -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="data_bottom">
+            <!-- 功率因数 -->
+            <div class="bottom_1 fl t_btn5" style="cursor: pointer;">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                <!--右下边框-->
+                <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div>
+                <div class="main_title">
+                    <img src="img/t_1.png" alt="">
+                    功率因数
+                </div>
+                <div id="chart_power" class="chart t_btn9" style="width:100%;height:290px;"></div>
+            </div>
+
+            <!--  -->
+            <div class="bottom_center fl">
+                <!-- 三相平衡 -->
+                <div class="bottom_2 fl">
+                    <!--左上边框-->
+                    <div class="t_line_box">
+                        <i class="t_l_line"></i> 
+                        <i class="l_t_line"></i> 
+                    </div> 
+                    <!--右上边框-->
+                    <div class="t_line_box">
+                        <i class="t_r_line"></i> 
+                        <i class="r_t_line"></i> 
+                    </div> 
+                    <!--左下边框-->
+                    <div class="t_line_box">
+                        <i class="l_b_line"></i> 
+                        <i class="b_l_line"></i> 
+                    </div> 
+                        <!--右下边框-->
+                        <div class="t_line_box">
+                        <i class="r_b_line"></i> 
+                        <i class="b_r_line"></i> 
+                    </div>
+                    <div class="main_title">
+                        <img src="img/fuhe2.png" alt="">
+                        三相平衡
+                    </div>
+                    <div id="chart_7" class="echart" style="width:100%;height:250px;"></div>
+                </div>
+
+                <!-- 三相温度 -->
+                <div class="bottom_3 fl">
+                    <!--左上边框-->
+                    <div class="t_line_box">
+                        <i class="t_l_line"></i> 
+                        <i class="l_t_line"></i> 
+                    </div> 
+                    <!--右上边框-->
+                    <div class="t_line_box">
+                        <i class="t_r_line"></i> 
+                        <i class="r_t_line"></i> 
+                    </div> 
+                    <!--左下边框-->
+                    <div class="t_line_box">
+                        <i class="l_b_line"></i> 
+                        <i class="b_l_line"></i> 
+                    </div> 
+                        <!--右下边框-->
+                        <div class="t_line_box">
+                        <i class="r_b_line"></i> 
+                        <i class="b_r_line"></i> 
+                    </div>
+                    <div class="main_title">
+                        <img src="img/qushi.png" alt="">
+                        三相温度
+                    </div>
+                    <div id="chart_5" class="echart" style="width:100%;height:250px;"></div>
+                </div>
+            </div>
+            <!-- 最大需量 -->
+            <div class="bottom_4 fr">
+                <!--左上边框-->
+                <div class="t_line_box">
+                    <i class="t_l_line"></i> 
+                    <i class="l_t_line"></i> 
+                </div> 
+                <!--右上边框-->
+                <div class="t_line_box">
+                    <i class="t_r_line"></i> 
+                    <i class="r_t_line"></i> 
+                </div> 
+                <!--左下边框-->
+                <div class="t_line_box">
+                    <i class="l_b_line"></i> 
+                    <i class="b_l_line"></i> 
+                </div> 
+                    <!--右下边框-->
+                    <div class="t_line_box">
+                    <i class="r_b_line"></i> 
+                    <i class="b_r_line"></i> 
+                </div>
+                <div class="main_title">
+                    <img src="img/shebei.png" alt="">
+                最大需量
+                </div>
+                <div id="chart_6" class="echart" style="width:100%;height:200px;"></div>
+                <div class="main_table t_btn8" style="margin-top:0;">
+                    <table id='tableXuliang'>    
+                        <tbody>
+                        <!-- <tr>
+                            <td><img src='img/month.png' alt='本月最大需量' title='本月最大需量'></td>
+                            <td>72.08kW</td>                         
+                        </tr>
+                        <tr>
+                            <td><img src='img/year.png' alt='本年最大需量' title='本年最大需量'></td>
+                            <td>91.0kW</td>
+                        </tr> -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
